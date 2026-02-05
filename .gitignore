@@ -1,0 +1,43 @@
+# Ignore Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Configuration (contains sensitive data)
+.env
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated workspaces
+workspace_v*/
+
+# Eclipse
+.metadata/
+.settings/
+
+# Build outputs
+target/
+build/
+dist/
+*.war
+*.jar
+*.class
