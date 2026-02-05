@@ -32,21 +32,24 @@ class WorkspaceAutomation:
     
     def setup_logging(self):
         """Setup logging configuration"""
-        log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        log_format = '%(levelname)s | %(message)s'
         logging.basicConfig(
             level=logging.INFO,
             format=log_format,
             handlers=[
-                logging.FileHandler(f'automation_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'),
+                logging.FileHandler(f'automation_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log', encoding='utf-8'),
                 logging.StreamHandler(sys.stdout)
             ]
         )
+        # Suppress verbose logging from libraries
+        logging.getLogger('urllib3').setLevel(logging.WARNING)
+        logging.getLogger('git').setLevel(logging.WARNING)
     
     def validate_prerequisites(self):
         """Validate all prerequisites before starting"""
-        self.logger.info("=" * 60)
-        self.logger.info("Validating prerequisites...")
-        self.logger.info("=" * 60)
+        print("\n" + "=" * 70)
+        print("  VALIDATING PREREQUISITES")
+        print("=" * 70)
         
         errors = []
         
@@ -64,74 +67,74 @@ class WorkspaceAutomation:
             errors.append("Git is not installed or not in PATH")
         
         if errors:
-            self.logger.error("Prerequisites validation failed:")
+            print("\n[ERROR] Prerequisites validation failed:")
             for error in errors:
-                self.logger.error(f"  - {error}")
+                print(f"  - {error}")
             return False
         
-        self.logger.info("Prerequisites validation passed!")
+        print("[OK] All prerequisites validated successfully!\n")
         return True
     
     def run(self):
         """Execute the full automation workflow"""
-        self.logger.info("=" * 60)
-        self.logger.info("WORKSPACE AUTOMATION STARTED")
-        self.logger.info("=" * 60)
+        print("\n" + "=" * 70)
+        print("  WORKSPACE AUTOMATION STARTED")
+        print("=" * 70)
         
         # Step 1: Validate prerequisites
         if not self.validate_prerequisites():
-            self.logger.error("Automation aborted due to validation errors")
+            print("\n[ERROR] Automation aborted due to validation errors")
             return False
         
         # Step 2: Create workspace
-        self.logger.info("\n" + "=" * 60)
-        self.logger.info("STEP 1: Creating Workspace")
-        self.logger.info("=" * 60)
+        print("\n" + "=" * 70)
+        print("  STEP 1: Creating Workspace")
+        print("=" * 70)
         
         try:
             workspace_path = self.workspace_manager.create_workspace()
-            self.logger.info(f"✓ Workspace created: {workspace_path}")
+            print(f"[OK] Workspace created: {workspace_path}\n")
         except Exception as e:
-            self.logger.error(f"Failed to create workspace: {str(e)}")
+            print(f"\n[ERROR] Failed to create workspace: {str(e)}")
             return False
         
         # Step 3: Clone repositories
-        self.logger.info("\n" + "=" * 60)
-        self.logger.info("STEP 2: Cloning Repositories")
-        self.logger.info("=" * 60)
+        print("\n" + "=" * 70)
+        print("  STEP 2: Cloning Repositories")
+        print("=" * 70 + "\n")
         
         clone_results = self.workspace_manager.clone_all_repositories(workspace_path)
         
         all_cloned = True
         for result in clone_results:
             if result['success']:
-                self.logger.info(f"✓ Cloned: {result['repo']}")
+                print(f"[OK] Successfully cloned: {result['repo']}")
             else:
-                self.logger.error(f"✗ Failed: {result['repo']} - {result['result']}")
+                print(f"[FAIL] Failed to clone: {result['repo']} - {result['result']}")
                 all_cloned = False
         
         if not all_cloned:
-            self.logger.warning("Some repositories failed to clone, continuing...")
+            print("\n[WARNING] Some repositories failed to clone, continuing...")
         
         # Step 4: Configure Eclipse project
-        self.logger.info("\n" + "=" * 60)
-        self.logger.info("STEP 3: Configuring Eclipse Project")
-        self.logger.info("=" * 60)
+        print("\n" + "=" * 70)
+        print("  STEP 3: Configuring Eclipse Project")
+        print("=" * 70 + "\n")
         
         try:
             success, eclipse_workspace = self.eclipse_manager.setup_project(workspace_path)
             if success:
-                self.logger.info(f"✓ Eclipse project configured")
-                self.logger.info(f"  Eclipse workspace: {eclipse_workspace}")
+                print(f"[OK] Eclipse project configured")
+                print(f"     Eclipse workspace: {eclipse_workspace}")
             else:
-                self.logger.error("Failed to configure Eclipse project")
+                print("[ERROR] Failed to configure Eclipse project")
         except Exception as e:
-            self.logger.error(f"Eclipse configuration error: {str(e)}")
+            print(f"[ERROR] Eclipse configuration error: {str(e)}")
         
         # Step 5: Build project
-        self.logger.info("\n" + "=" * 60)
-        self.logger.info("STEP 4: Building Project")
-        self.logger.info("=" * 60)
+        print("\n" + "=" * 70)
+        print("  STEP 4: Building Project")
+        print("=" * 70 + "\n")
         
         eclipse_repo = self.config.get_eclipse_repo()
         project_path = workspace_path / eclipse_repo['name']
@@ -139,46 +142,47 @@ class WorkspaceAutomation:
         build_success, build_msg = self.build_manager.build_project(project_path)
         
         if build_success:
-            self.logger.info(f"✓ Build successful: {build_msg}")
+            print(f"[OK] Build successful: {build_msg}")
             
             # Find and deploy WAR file
             war_file = self.build_manager.find_war_file(project_path)
             if war_file:
-                self.logger.info(f"✓ Found WAR file: {war_file.name}")
+                print(f"[OK] Found WAR file: {war_file.name}")
                 
                 deploy_success, deploy_msg = self.build_manager.deploy_to_tomcat(war_file)
                 if deploy_success:
-                    self.logger.info(f"✓ Deployed to Tomcat: {deploy_msg}")
+                    print(f"[OK] Deployed to Tomcat: {deploy_msg}")
                 else:
-                    self.logger.warning(f"Deployment warning: {deploy_msg}")
+                    print(f"[WARNING] Deployment warning: {deploy_msg}")
             else:
-                self.logger.warning("No WAR file found, skipping deployment")
+                print("[WARNING] No WAR file found, skipping deployment")
         else:
-            self.logger.warning(f"Build skipped or failed: {build_msg}")
+            print(f"[WARNING] Build skipped or failed: {build_msg}")
         
         # Step 6: Start Tomcat
-        self.logger.info("\n" + "=" * 60)
-        self.logger.info("STEP 5: Starting Tomcat Server")
-        self.logger.info("=" * 60)
+        print("\n" + "=" * 70)
+        print("  STEP 5: Starting Tomcat Server")
+        print("=" * 70 + "\n")
         
         start_success, start_msg = self.build_manager.start_tomcat()
         
         if start_success:
-            self.logger.info(f"✓ Tomcat started: {start_msg}")
+            print(f"[OK] Tomcat started: {start_msg}")
         else:
-            self.logger.warning(f"Tomcat start warning: {start_msg}")
+            print(f"[WARNING] Tomcat start warning: {start_msg}")
         
         # Summary
-        self.logger.info("\n" + "=" * 60)
-        self.logger.info("AUTOMATION COMPLETED!")
-        self.logger.info("=" * 60)
-        self.logger.info(f"\nWorkspace Location: {workspace_path}")
-        self.logger.info(f"Eclipse Workspace: {eclipse_workspace}")
-        self.logger.info(f"Application URL: http://localhost:{self.config.tomcat_port}")
-        self.logger.info(f"\nTo open in Eclipse:")
-        self.logger.info(f"  1. Launch Eclipse: {self.config.eclipse_path}")
-        self.logger.info(f"  2. Select workspace: {eclipse_workspace}")
-        self.logger.info(f"  3. Import project: {project_path}")
+        print("\n" + "=" * 70)
+        print("  AUTOMATION COMPLETED SUCCESSFULLY!")
+        print("=" * 70)
+        print(f"\n  Workspace Location  : {workspace_path}")
+        print(f"  Eclipse Workspace   : {eclipse_workspace}")
+        print(f"  Application URL     : http://localhost:{self.config.tomcat_port}")
+        print(f"\n  Next Steps:")
+        print(f"    1. Launch Eclipse   : {self.config.eclipse_path}")
+        print(f"    2. Select Workspace : {eclipse_workspace}")
+        print(f"    3. Import Project   : {project_path}")
+        print("\n" + "=" * 70 + "\n")
         
         return True
 
@@ -190,17 +194,16 @@ def main():
         success = automation.run()
         
         if success:
-            print("\n✓ Automation completed successfully!")
             sys.exit(0)
         else:
-            print("\n✗ Automation completed with errors")
+            print("\n[ERROR] Automation completed with errors\n")
             sys.exit(1)
             
     except KeyboardInterrupt:
-        print("\n\nAutomation interrupted by user")
+        print("\n\n[INTERRUPTED] Automation cancelled by user\n")
         sys.exit(1)
     except Exception as e:
-        print(f"\n✗ Unexpected error: {str(e)}")
+        print(f"\n[ERROR] Unexpected error: {str(e)}\n")
         sys.exit(1)
 
 

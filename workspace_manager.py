@@ -32,37 +32,54 @@ class WorkspaceManager:
         """Create a new workspace directory"""
         workspace_path = self.get_next_workspace_path()
 
-        self.logger.info(f"Creating workspace: {workspace_path}")
+        print(f"Creating workspace: {workspace_path}")
         workspace_path.mkdir(parents=True, exist_ok=True)
 
         return workspace_path
 
     def clone_repository(self, repo, workspace_path):
-        """Clone a single repository"""
+        """Clone a single repository with real-time progress"""
         repo_url = repo["url"]
         repo_name = repo["name"]
         repo_path = workspace_path / repo_name
 
-        self.logger.info(f"Cloning repository: {repo_name} from {repo_url}")
+        print(f"Cloning: {repo_name}")
+        print(f"Source : {repo_url}")
 
         try:
-            # Clone the repository
-            result = subprocess.run(
-                ["git", "clone", repo_url, str(repo_path)],
-                capture_output=True,
+            # Clone with progress output
+            process = subprocess.Popen(
+                ["git", "clone", "--progress", repo_url, str(repo_path)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
                 text=True,
-                check=True,
+                bufsize=1,
+                universal_newlines=True
             )
-            self.logger.info(f"Successfully cloned: {repo_name}")
-            return True, repo_path
 
-        except subprocess.CalledProcessError as e:
-            error_msg = f"Failed to clone {repo_name}: {e.stderr}"
-            self.logger.error(error_msg)
-            return False, error_msg
+            # Stream output in real-time
+            for line in process.stdout:
+                line = line.rstrip()
+                if line:
+                    print(f"  {line}")
+
+            process.wait()
+
+            if process.returncode == 0:
+                print("")
+                return True, repo_path
+            else:
+                error_msg = f"Clone failed (exit code: {process.returncode})"
+                print(f"[ERROR] {error_msg}\n")
+                return False, error_msg
+
         except FileNotFoundError:
             error_msg = "Git is not installed or not in PATH"
-            self.logger.error(error_msg)
+            print(f"[ERROR] {error_msg}\n")
+            return False, error_msg
+        except Exception as e:
+            error_msg = f"Clone failed: {str(e)}"
+            print(f"[ERROR] {error_msg}\n")
             return False, error_msg
 
     def clone_all_repositories(self, workspace_path):
