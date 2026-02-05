@@ -31,6 +31,9 @@ class Config:
         # Workspace Configuration
         self.workspace_base_path = self.get_env("WORKSPACE_BASE_PATH")
         self.workspace_prefix = self.get_env("WORKSPACE_PREFIX", "workspace_v")
+        
+        # Logging Configuration
+        self.log_dir = self.get_env("LOG_DIR", "logs")
 
         # Repository Configuration
         self.repositories = self._load_repositories()

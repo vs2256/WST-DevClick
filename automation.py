@@ -18,11 +18,17 @@ class WorkspaceAutomation:
     
     def __init__(self):
         """Initialize automation with configuration"""
+        # Load config first to get log directory
+        try:
+            self.config = Config()
+        except Exception as e:
+            print(f"[ERROR] Configuration error: {str(e)}")
+            sys.exit(1)
+        
         self.setup_logging()
         self.logger = logging.getLogger(__name__)
         
         try:
-            self.config = Config()
             self.workspace_manager = WorkspaceManager(self.config)
             self.eclipse_manager = EclipseManager(self.config)
             self.build_manager = BuildManager(self.config)
@@ -32,12 +38,18 @@ class WorkspaceAutomation:
     
     def setup_logging(self):
         """Setup logging configuration"""
+        # Create logs directory if it doesn't exist
+        log_dir = Path(self.config.log_dir)
+        log_dir.mkdir(exist_ok=True)
+        
+        log_file = log_dir / f'automation_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'
+        
         log_format = '%(levelname)s | %(message)s'
         logging.basicConfig(
             level=logging.INFO,
             format=log_format,
             handlers=[
-                logging.FileHandler(f'automation_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log', encoding='utf-8'),
+                logging.FileHandler(log_file, encoding='utf-8'),
                 logging.StreamHandler(sys.stdout)
             ]
         )
