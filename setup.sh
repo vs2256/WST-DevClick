@@ -21,10 +21,31 @@ echo "Found: $PYTHON_CMD"
 $PYTHON_CMD --version
 echo ""
 
-# Create venv
-if [ ! -d ".venv" ]; then
+# Check if venv exists
+SKIP_INSTALL=0
+if [ -d ".venv" ]; then
+  echo "Virtual environment already exists."
+  read -p "Do you want to recreate it? (y/N): " RECREATE
+  echo ""
+  if [[ "$RECREATE" =~ ^[Yy]$ ]]; then
+    echo "Removing existing virtual environment..."
+    rm -rf .venv
+    echo "Creating virtual environment..."
+    $PYTHON_CMD -m venv .venv
+    echo "Done!"
+    echo ""
+    SKIP_INSTALL=0
+  else
+    echo "Using existing virtual environment."
+    echo ""
+    SKIP_INSTALL=1
+  fi
+else
   echo "Creating virtual environment..."
   $PYTHON_CMD -m venv .venv
+  echo "Done!"
+  echo ""
+  SKIP_INSTALL=0
 fi
 
 # Activate venv
@@ -41,12 +62,29 @@ if [ ! -f ".env" ]; then
   exit 1
 fi
 
-# Install packages
-echo "Installing packages..."
-pip install --upgrade pip --quiet
-pip install -r requirements.txt --quiet
-echo "Done!"
-echo ""
+# Install packages (check if needed)
+if [ "$SKIP_INSTALL" -eq 1 ]; then
+  echo "Checking installed packages..."
+  if ! python -c "import dotenv" &> /dev/null; then
+    echo "Required packages not found."
+    SKIP_INSTALL=0
+  else
+    echo "All required packages already installed."
+    read -p "Do you want to reinstall packages? (y/N): " REINSTALL
+    echo ""
+    if [[ "$REINSTALL" =~ ^[Yy]$ ]]; then
+      SKIP_INSTALL=0
+    fi
+  fi
+fi
+
+if [ "$SKIP_INSTALL" -eq 0 ]; then
+  echo "Installing packages..."
+  pip install --upgrade pip --quiet
+  pip install -r requirements.txt --quiet
+  echo "Done!"
+  echo ""
+fi
 
 # Run automation
 echo "===================================================="

@@ -98,25 +98,52 @@ class WorkspaceAutomation:
             print("\n[ERROR] Automation aborted due to validation errors")
             return False
         
-        # Step 2: Create workspace
+        # Step 2: Select or Create workspace
         print("\n" + "=" * 70)
-        print("  STEP 1: Creating Workspace")
+        print("  STEP 1: Workspace Selection")
         print("=" * 70)
         
         try:
-            workspace_path = self.workspace_manager.create_workspace()
-            print(f"[OK] Workspace created: {workspace_path}\n")
+            workspace_path, is_new = self.workspace_manager.select_or_create_workspace()
+            
+            if is_new:
+                self.workspace_manager.create_workspace(workspace_path)
+                print(f"[OK] Workspace created: {workspace_path}\n")
+            else:
+                print(f"[OK] Using existing workspace: {workspace_path}\n")
         except Exception as e:
             print(f"\n[ERROR] Failed to create workspace: {str(e)}")
             return False
         
         # Step 3: Clone repositories
         print("\n" + "=" * 70)
-        print("  STEP 2: Cloning Repositories")
+        print("  STEP 2: Repository Management")
         print("=" * 70 + "\n")
         
-        clone_results = self.workspace_manager.clone_all_repositories(workspace_path)
+        if is_new:
+            # New workspace - clone all repositories
+            print("Cloning all repositories...\n")
+            clone_results = self.workspace_manager.clone_all_repositories(workspace_path)
+        else:
+            # Existing workspace - validate and clone missing repos
+            print("Validating existing workspace...\n")
+            existing_repos, missing_repos = self.workspace_manager.validate_workspace_repos(workspace_path)
+            
+            if existing_repos:
+                print("[OK] Already cloned repositories:")
+                for repo in existing_repos:
+                    print(f"     - {repo['name']}")
+                print("")
+            
+            if missing_repos:
+                print(f"[INFO] Found {len(missing_repos)} missing repository(ies)\n")
+                print("Cloning missing repositories...\n")
+                clone_results = self.workspace_manager.clone_all_repositories(workspace_path, missing_repos)
+            else:
+                print("[OK] All repositories already cloned\n")
+                clone_results = []
         
+        # Process clone results
         all_cloned = True
         for result in clone_results:
             if result['success']:
@@ -125,7 +152,7 @@ class WorkspaceAutomation:
                 print(f"[FAIL] Failed to clone: {result['repo']} - {result['result']}")
                 all_cloned = False
         
-        if not all_cloned:
+        if not all_cloned and clone_results:
             print("\n[WARNING] Some repositories failed to clone, continuing...")
         
         # Step 4: Configure Eclipse project

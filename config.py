@@ -69,7 +69,13 @@ class Config:
             if not url:
                 break
             name = os.getenv(f"REPO_{index}_NAME", f"repo{index}")
-            repos.append({"url": url, "name": name, "index": index})
+            branch = os.getenv(f"REPO_{index}_BRANCH", "")
+            repos.append({
+                "url": url,
+                "name": name,
+                "branch": branch,
+                "index": index
+            })
             index += 1
 
         if not repos:
