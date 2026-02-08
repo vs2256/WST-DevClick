@@ -35,7 +35,7 @@ Edit `.env` file with your configuration:
 
 ```properties
 # Repository URLs
-REPO_1_URL=https://github.com/your-org/repo1.git
+REPO_PRIMARY_URL=https://github.com/your-org/repo1.git
 REPO_2_URL=https://github.com/your-org/repo2.git
 REPO_3_URL=https://github.com/your-org/repo3.git
 
@@ -77,8 +77,8 @@ After setup completes:
 
 ```properties
 # Add up to any number of repositories
-REPO_1_URL=https://github.com/org/repo1.git
-REPO_1_NAME=repo1
+REPO_PRIMARY_URL=https://github.com/org/repo1.git
+REPO_PRIMARY_NAME=repo1
 
 REPO_2_URL=https://github.com/org/repo2.git
 REPO_2_NAME=repo2

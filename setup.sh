@@ -104,4 +104,5 @@ else
   echo "FAILED"
 fi
 echo ""
+read -p "Press Enter to exit..."
 exit $EXIT_CODE

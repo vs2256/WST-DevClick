@@ -63,7 +63,21 @@ class Config:
     def _load_repositories(self):
         """Load repository configurations"""
         repos = []
-        index = 1
+        
+        # Check for primary repository first
+        primary_url = os.getenv("REPO_PRIMARY_URL")
+        if primary_url:
+            primary_name = os.getenv("REPO_PRIMARY_NAME", "repo_primary")
+            primary_branch = os.getenv("REPO_PRIMARY_BRANCH", "")
+            repos.append({
+                "url": primary_url,
+                "name": primary_name,
+                "branch": primary_branch,
+                "index": 1
+            })
+        
+        # Load numbered repositories (starting from 2)
+        index = 2
         while True:
             url = os.getenv(f"REPO_{index}_URL")
             if not url:
@@ -80,7 +94,7 @@ class Config:
 
         if not repos:
             raise ValueError(
-                "No repositories configured. Please add REPO_*_URL in .env file"
+                "No repositories configured. Please add REPO_PRIMARY_URL or REPO_*_URL in .env file"
             )
 
         return repos

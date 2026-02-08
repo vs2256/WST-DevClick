@@ -101,4 +101,5 @@ if %errorlevel% equ 0 (
   echo FAILED
 )
 echo.
+pause
 exit /b %errorlevel%
