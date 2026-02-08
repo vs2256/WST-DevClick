@@ -23,6 +23,9 @@ ENV/
 # Logs
 *.log
 
+# Processed resource files
+*-processed.bat
+
 # OS
 .DS_Store
 Thumbs.db

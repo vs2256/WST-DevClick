@@ -60,6 +60,54 @@ class Config:
         self.app_port = self.get_env("APP_PORT", "8080")
         self.server_port = self.get_env("SERVER_PORT", "8080")
 
+        # Database Configuration
+        self.db_url = self.get_env("DB_URL", "jdbc:postgresql://localhost:5432/mydb")
+        self.db_username = self.get_env("DB_USERNAME", "dbuser")
+        self.db_password = self.get_env("DB_PASSWORD", "dbpassword")
+        self.db_driver = self.get_env("DB_DRIVER", "org.postgresql.Driver")
+        self.db_name = self.get_env("DB_NAME", "mydb")
+
+        # Context.xml Configuration
+        self.context_path = self.get_env("CONTEXT_PATH", "/RWS4")
+        self.context_docbase = self.get_env("CONTEXT_DOCBASE", "RWS4")
+        self.context_debug = self.get_env("CONTEXT_DEBUG", "5")
+        self.context_reloadable = self.get_env("CONTEXT_RELOADABLE", "true")
+        self.context_crosscontext = self.get_env("CONTEXT_CROSSCONTEXT", "true")
+
+        # Database Connection Pool Settings
+        self.db_jndi_name = self.get_env("DB_JNDI_NAME", "jdbc/RWS4")
+        self.db_max_total = self.get_env("DB_MAX_TOTAL", "15")
+        self.db_max_idle = self.get_env("DB_MAX_IDLE", "5")
+        self.db_max_wait_millis = self.get_env("DB_MAX_WAIT_MILLIS", "500")
+        self.db_initial_size = self.get_env("DB_INITIAL_SIZE", "5")
+        self.db_test_on_borrow = self.get_env("DB_TEST_ON_BORROW", "true")
+        self.db_validation_query = self.get_env("DB_VALIDATION_QUERY", "select 1")
+
+        # Server Configuration
+        self.server_host = self.get_env("SERVER_HOST", "localhost")
+
+        # Application Details
+        self.app_name = self.get_env("APP_NAME", "MyApplication")
+        self.app_version = self.get_env("APP_VERSION", "1.0.0")
+        self.app_environment = self.get_env("APP_ENVIRONMENT", "development")
+        self.app_base_url = self.get_env("APP_BASE_URL", "http://localhost:8080")
+
+        # RFX Config Properties Configuration
+        self.rfx_app_name = self.get_env("RFX_APP_NAME", "RWS4")
+        self.rfx_app_url = self.get_env("RFX_APP_URL", "http://localhost:8080/RWS4")
+        self.rfx_batch_profile_mode = self.get_env("RFX_BATCH_PROFILE_MODE", "DEMO")
+        self.rfx_load_specific_owners = self.get_env("RFX_LOAD_SPECIFIC_OWNERS", "111110099")
+        self.mount_base_path = self.get_env("MOUNT_BASE_PATH")
+        self.rfx_kernel_web_url = self.get_env("RFX_KERNEL_WEB_URL", "https://wfmeng01.reflexisinc.co.in/kernel")
+        self.rfx_kernel_default_domain = self.get_env("RFX_KERNEL_DEFAULT_DOMAIN", "REFLEXIS")
+        self.rfx_kernel_connection_user = self.get_env("RFX_KERNEL_CONNECTION_USER", "admin")
+        self.rfx_kernel_connection_password = self.get_env("RFX_KERNEL_CONNECTION_PASSWORD", "k3rn3l@2018")
+
+        # RWS4 Batch Script Configuration
+        self.rws4_owner_ids = self.get_env("RWS4_OWNER_IDS", "111110099 121500199")
+        self.mount_folder_name = self.get_env("MOUNT_FOLDER_NAME", "mount")
+        self.kernel_config_folder = self.get_env("KERNEL_CONFIG_FOLDER", "knlconfig")
+
     def _load_repositories(self):
         """Load repository configurations"""
         repos = []

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<Context path="${CONTEXT_PATH}" docBase="${CONTEXT_DOCBASE}" debug="${CONTEXT_DEBUG}" reloadable="${CONTEXT_RELOADABLE}"
+	crossContext="${CONTEXT_CROSSCONTEXT}">
+
+	<Resource
+		url="${DB_URL}"
+		username="${DB_USERNAME}" password="${DB_PASSWORD}"
+		driverClassName="${DB_DRIVER}" name="${DB_JNDI_NAME}"
+		auth="Container" type="javax.sql.DataSource" maxTotal="${DB_MAX_TOTAL}" maxIdle="${DB_MAX_IDLE}"
+		maxWaitMillis="${DB_MAX_WAIT_MILLIS}" initialSize="${DB_INITIAL_SIZE}" testOnBorrow="${DB_TEST_ON_BORROW}"
+		validationQuery="${DB_VALIDATION_QUERY}" />
+
+</Context>

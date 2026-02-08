@@ -12,6 +12,7 @@ from config import Config
 from workspace_manager import WorkspaceManager
 from eclipse_manager import EclipseManager
 from build_manager import BuildManager
+from resource_manager import ResourceManager
 
 
 class WorkspaceAutomation:
@@ -33,6 +34,7 @@ class WorkspaceAutomation:
             self.workspace_manager = WorkspaceManager(self.config)
             self.eclipse_manager = EclipseManager(self.config)
             self.build_manager = BuildManager(self.config)
+            self.resource_manager = ResourceManager(self.config)
         except Exception as e:
             self.logger.error(f"Configuration error: {str(e)}")
             sys.exit(1)
@@ -164,9 +166,25 @@ class WorkspaceAutomation:
         if not all_cloned and clone_results:
             print("\n[WARNING] Some repositories failed to clone, continuing...")
 
-        # Step 4: Configure Eclipse project
+        # Step 4: Deploy Resource Files
         print("\n" + "=" * 70)
-        print("  STEP 3: Configuring Eclipse Project")
+        print("  STEP 3: Deploying Resource Files")
+        print("=" * 70 + "\n")
+
+        try:
+            resource_success, resource_msg = self.resource_manager.setup_resources(
+                workspace_path
+            )
+            if resource_success:
+                print(f"[OK] {resource_msg}")
+            else:
+                print(f"[WARNING] {resource_msg}")
+        except Exception as e:
+            print(f"[WARNING] Resource deployment error: {str(e)}")
+
+        # Step 5: Configure Eclipse project
+        print("\n" + "=" * 70)
+        print("  STEP 4: Configuring Eclipse Project")
         print("=" * 70 + "\n")
 
         try:
@@ -181,9 +199,9 @@ class WorkspaceAutomation:
         except Exception as e:
             print(f"[ERROR] Eclipse configuration error: {str(e)}")
 
-        # Step 5: Build project
+        # Step 6: Build project
         print("\n" + "=" * 70)
-        print("  STEP 4: Building Project")
+        print("  STEP 5: Building Project")
         print("=" * 70 + "\n")
 
         eclipse_repo = self.config.get_eclipse_repo()
@@ -211,9 +229,9 @@ class WorkspaceAutomation:
         else:
             print(f"[WARNING] Build skipped or failed: {build_msg}")
 
-        # Step 6: Start Tomcat
+        # Step 7: Start Tomcat
         print("\n" + "=" * 70)
-        print("  STEP 5: Starting Tomcat Server")
+        print("  STEP 6: Starting Tomcat Server")
         print("=" * 70 + "\n")
 
         start_success, start_msg = self.build_manager.start_tomcat()

@@ -6,6 +6,7 @@ One-click automation to setup development workspace with repository cloning, Ecl
 
 ✓ **Automatic Workspace Creation** - Creates versioned workspace directories (workspace_v1, workspace_v2, etc.)
 ✓ **Repository Cloning** - Clones multiple Git repositories in parallel
+✓ **Dynamic Resource Management** - Processes and deploys configuration files with values from .env
 ✓ **Eclipse Configuration** - Auto-generates Eclipse project files, classpath, and settings
 ✓ **Java & Tomcat Setup** - Configures Java version and Tomcat server
 ✓ **Build & Deploy** - Builds project (Gradle) and deploys to Tomcat
@@ -109,6 +110,33 @@ TOMCAT_VERSION=9.0
 TOMCAT_PORT=8080
 ```
 
+### Resource Management
+
+The system automatically processes template files from the `resources/` folder and deploys them with dynamic values:
+
+```properties
+# Database Configuration (for context.xml and rfxconfig.properties)
+DB_URL=jdbc:postgresql://localhost:5432/mydb
+DB_USERNAME=dbuser
+DB_PASSWORD=dbpassword
+DB_DRIVER=org.postgresql.Driver
+DB_NAME=mydb
+
+# Application Details
+APP_NAME=MyApplication
+APP_VERSION=1.0.0
+APP_ENVIRONMENT=development
+APP_BASE_URL=http://localhost:8080
+```
+
+**Template Files** (in `resources/` folder):
+- `config.properties` → Deployed to `{REPO_PRIMARY}/src/config.properties`
+- `rfxconfig.properties` → Deployed to `{REPO_PRIMARY}/src/rfxconfig.properties`
+- `context.xml` → Deployed to `{REPO_PRIMARY}/WebContent/META-INF/context.xml`
+- `rws4-win.bat` → Executed after deployment
+
+Use placeholders like `${DB_URL}`, `${DB_USERNAME}`, `${APP_NAME}` in your template files. See `resources/README.md` for full documentation.
+
 ## What Does It Do?
 
 The automation performs these steps:
@@ -116,10 +144,11 @@ The automation performs these steps:
 1. **Validates Prerequisites** - Checks Git, Java, Tomcat installations
 2. **Creates Workspace** - Creates `workspace_v1` (or next available version)
 3. **Clones Repositories** - Clones all configured repositories
-4. **Configures Eclipse** - Generates `.project`, `.classpath`, and settings files
-5. **Builds Project** - Runs Gradle build
-6. **Deploys to Tomcat** - Copies WAR file to Tomcat webapps
-7. **Starts Server** - Launches Tomcat on configured port
+4. **Deploys Resources** - Processes and deploys configuration files (context.xml, rfxconfig.properties, etc.)
+5. **Configures Eclipse** - Generates `.project`, `.classpath`, and settings files
+6. **Builds Project** - Runs Gradle build
+7. **Deploys to Tomcat** - Copies WAR file to Tomcat webapps
+8. **Starts Server** - Launches Tomcat on configured port
 
 ## Project Structure
 
@@ -130,6 +159,13 @@ WST DevClick/
 ├── workspace_manager.py   # Workspace & repo operations
 ├── eclipse_manager.py     # Eclipse configuration
 ├── build_manager.py       # Build & deployment
+├── resource_manager.py    # Resource file processing
+├── resources/             # Template configuration files
+│   ├── config.properties  # Application config template
+│   ├── rfxconfig.properties # RFX config template
+│   ├── context.xml        # Tomcat context template
+│   ├── rws4-win.bat       # Custom batch script
+│   └── README.md          # Resource documentation
 ├── .env.example           # Configuration template
 ├── .env                   # Your configuration (git-ignored)
 ├── setup.bat              # Windows launcher
