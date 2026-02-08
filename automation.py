@@ -199,13 +199,27 @@ class WorkspaceAutomation:
         except Exception as e:
             print(f"[ERROR] Eclipse configuration error: {str(e)}")
 
-        # Step 6: Build project
+        # Step 6: Configure Gradle Files
         print("\n" + "=" * 70)
-        print("  STEP 5: Building Project")
+        print("  STEP 5: Configuring Gradle Files")
         print("=" * 70 + "\n")
 
         eclipse_repo = self.config.get_eclipse_repo()
         project_path = workspace_path / eclipse_repo["name"]
+
+        try:
+            config_success, config_msg = self.build_manager.configure_gradle_project(project_path)
+            if config_success:
+                print(f"\n[OK] {config_msg}")
+            else:
+                print(f"\n[WARNING] {config_msg}")
+        except Exception as e:
+            print(f"[WARNING] Gradle configuration error: {str(e)}")
+
+        # Step 7: Build project
+        print("\n" + "=" * 70)
+        print("  STEP 6: Building Project")
+        print("=" * 70 + "\n")
 
         build_success, build_msg = self.build_manager.build_project(project_path)
 
@@ -231,7 +245,7 @@ class WorkspaceAutomation:
 
         # Step 7: Start Tomcat
         print("\n" + "=" * 70)
-        print("  STEP 6: Starting Tomcat Server")
+        print("  STEP 7: Starting Tomcat Server")
         print("=" * 70 + "\n")
 
         start_success, start_msg = self.build_manager.start_tomcat()
